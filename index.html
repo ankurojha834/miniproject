@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>3D Weather App with Voice</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+</head>
+<body>
+     
+
+    <div class="container">
+        <h2>🌎 3D Weather App</h2>
+        <div class="input-group">
+            <input type="text" id="city" placeholder="Enter city name">
+            <button id="voice-btn" onclick="startVoiceRecognition()">
+                🎤 Speak
+            </button>
+        </div>
+        <button onclick="getWeather()">Get Weather</button>
+        <div id="weather">
+            <div class="weather-icon"></div>
+            <p id="weather-info"></p>
+        </div>
+    </div>
+
+    <script>
+        function startVoiceRecognition() {
+            let recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = 'en-US';
+            recognition.start();
+
+            recognition.onresult = function(event) {
+                document.getElementById("city").value = event.results[0][0].transcript;
+            };
+        }
+
+        function getWeather() {
+            let city = document.getElementById("city").value;
+            if (city === "") {
+                alert("Please enter a city name!");
+                return;
+            }
+            fetch("weather.php?city=" + city)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        document.getElementById("weather-info").innerHTML = "City not found!";
+                        document.querySelector(".weather-icon").innerHTML = "❌";
+                    } else {
+                        let icon = getWeatherIcon(data.weather);
+                        document.querySelector(".weather-icon").innerHTML = icon;
+                        let weatherText = `Temperature: ${data.temp}°C, Weather: ${data.weather}`;
+                        document.getElementById("weather-info").innerHTML = weatherText;
+                        speakWeather(weatherText);
+                    }
+                })
+                .catch(error => console.log(error));
+        }
+
+        function getWeatherIcon(weather) {
+            if (weather.includes("Clear")) return "☀";
+            if (weather.includes("Cloud")) return "☁";
+            if (weather.includes("Rain")) return "🌧";
+            if (weather.includes("Snow")) return "❄";
+            if (weather.includes("Thunder")) return "⚡";
+            return "🌍";
+        }
+
+        function speakWeather(text) {
+            let speech = new SpeechSynthesisUtterance(text);
+            speech.lang = "en-US";
+            speech.rate = 1;
+            speech.pitch = 1;
+            window.speechSynthesis.speak(speech);
+        }
+    </script>
+</body>
+</html>
