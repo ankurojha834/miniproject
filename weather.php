@@ -1,7 +1,13 @@
 <?php
+require 'vendor/autoload.php'; // Load Composer dependencies
+
+$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
+$dotenv->load();
+
 if (isset($_GET['city'])) {
     $city = $_GET['city'];
-    $apiKey = "a9a329a686a72abe74a4f4116d0ddac1";  // Your API Key
+    $apiKey = $_ENV['API_KEY']; // Fetch API key from .env
+
     $url = "https://api.openweathermap.org/data/2.5/weather?q={$city}&appid={$apiKey}&units=metric";
 
     $response = file_get_contents($url);
